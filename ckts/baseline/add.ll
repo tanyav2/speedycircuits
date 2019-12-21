@@ -1,8 +1,9 @@
-@alice_in = global [32 x i32] [i32 0, i32 1, i32 1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0]
-@bob_in = global [32 x i32] [i32 0, i32 0, i32 0, i32 1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0]
+@alice_in = global [32 x i32] [i32 0, i32 1, i32 1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 1, i32 1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0]
+@bob_in = global [32 x i32] [i32 0, i32 0, i32 0, i32 1, i32 0, i32 0, i32 0, i32 0, i32 1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 1, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 0, i32 1, i32 0, i32 0, i32 0]
 @cons = global [1 x i32] [i32 0]
 
-define i64 @main() {
+define i64 @main() "function-instrument"="xray-always" {
+    %start = call i64 @llvm.readcyclecounter()
 	%w0 = load i32, i32* getelementptr ([32 x i32], [32 x i32]* @alice_in, i32 0, i32 0)
 	%w1 = load i32, i32* getelementptr ([32 x i32], [32 x i32]* @alice_in, i32 0, i32 1)
 	%w2 = load i32, i32* getelementptr ([32 x i32], [32 x i32]* @alice_in, i32 0, i32 2)
@@ -232,5 +233,10 @@ define i64 @main() {
 	%w226 = xor i32 %w221, %w225
 
 	%result = zext i32 %w69 to i64
-	ret i64 %result
+	%end = call i64 @llvm.readcyclecounter()
+	%diff = sub i64 %end, %start
+	ret i64 %diff
 }
+
+declare i64 @llvm.readcyclecounter()
+
